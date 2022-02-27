@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_ddd/domain/auth/auth_failure.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_ddd/domain/auth/i_auth_facade.dart';
+import 'package:flutter_ddd/domain/auth/user.dart' as auth;
 import 'package:flutter_ddd/domain/auth/value_objects.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
+import 'firebase_user_mapper.dart';
 
 @LazySingleton(as: IAuthFacade)
 class FirebaseAuthFacade implements IAuthFacade {
@@ -51,24 +54,31 @@ class FirebaseAuthFacade implements IAuthFacade {
 
   @override
   Future<Either<AuthFailure, Unit>> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) {
-      return left(const AuthFailure.cancelByUser());
-    }
-
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser.authentication;
-
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
-
     try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return left(const AuthFailure.cancelByUser());
+      }
+
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
       await _firebaseAuth.signInWithCredential(credential);
       return right(unit);
-    } catch (_) {
+    } on PlatformException catch (_) {
       return left(const AuthFailure.serverError());
     }
   }
+
+  @override
+  Future signOut() =>
+      Future.wait([_firebaseAuth.signOut(), _googleSignIn.signOut()]);
+
+  @override
+  Future<Option<auth.User>> getSignedUser() =>
+      Future.value(optionOf(_firebaseAuth.currentUser?.toDomain()));
 }

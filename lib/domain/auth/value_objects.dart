@@ -12,19 +12,6 @@ class EmailAddress extends ValueObject<String> {
   factory EmailAddress(String input) {
     return EmailAddress._(validateEmailAddress(input));
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is EmailAddress && other.value == value;
-  }
-
-  @override
-  int get hashCode => value.hashCode;
-
-  @override
-  String toString() => 'EmailAddress(value: $value)';
 }
 
 class Password extends ValueObject<String> {
@@ -36,17 +23,4 @@ class Password extends ValueObject<String> {
   factory Password(String input) {
     return Password._(validatePassword(input));
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is Password && other.value == value;
-  }
-
-  @override
-  int get hashCode => value.hashCode;
-
-  @override
-  String toString() => 'Password(value: $value)';
 }

@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:kt_dart/collection.dart';
 
 import 'failures.dart';
 
@@ -17,5 +18,40 @@ Either<ValueFailure<String>, String> validatePassword(String input) {
     return right(input);
   } else {
     return left(ValueFailure.shortPassword(failedValue: input));
+  }
+}
+
+Either<ValueFailure<String>, String> validateMaxStringLength(
+    String input, int maxLength) {
+  if (input.length <= maxLength) {
+    return right(input);
+  } else {
+    return left(
+        ValueFailure.exceedingLength(failedValue: input, max: maxLength));
+  }
+}
+
+Either<ValueFailure<String>, String> validateStringNotEmpty(String input) {
+  if (input.isNotEmpty) {
+    return right(input);
+  } else {
+    return left(ValueFailure.empty(failedValue: input));
+  }
+}
+
+Either<ValueFailure<String>, String> validateStringNotMultiline(String input) {
+  if (!input.contains('\n')) {
+    return right(input);
+  } else {
+    return left(ValueFailure.multiline(failedValue: input));
+  }
+}
+
+Either<ValueFailure<KtList<T>>, KtList<T>> validateMaxItemNumber<T>(
+    KtList<T> input, int maxNumber) {
+  if (input.size <= maxNumber) {
+    return right(input);
+  } else {
+    return left(ValueFailure.listTooLong(failedValue: input, max: maxNumber));
   }
 }

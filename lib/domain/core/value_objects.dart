@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:uuid/uuid.dart';
 
 import 'errors.dart';
 import 'failures.dart';
@@ -14,6 +15,9 @@ abstract class ValueObject<T> {
   }
 
   bool get isValid => value.isRight();
+  Either<ValueFailure<dynamic>, Unit> get failureOrUnit {
+    return value.fold((f) => left(f), (r) => right(unit));
+  }
 
   @override
   bool operator ==(Object other) {
@@ -27,4 +31,19 @@ abstract class ValueObject<T> {
 
   @override
   String toString() => 'Value($value)';
+}
+
+class UniqueId extends ValueObject<String> {
+  @override
+  final Either<ValueFailure<String>, String> value;
+
+  factory UniqueId() {
+    return UniqueId._(right(const Uuid().v1()));
+  }
+
+  factory UniqueId.fromUniqueString(String uniqueId) {
+    return UniqueId._(right(uniqueId));
+  }
+
+  const UniqueId._(this.value);
 }
